@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить чек</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #eaeef3;
+            color: #333;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .form-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 90%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .form-container:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #022359;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            height: 50px;
+            width: 25%;
+            position: relative;
+            right:15%;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+            color: #2c3e50;
+        }
+
+        label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+            color: #1e1010;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #007BFF;
+            box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+            background-color: #fff;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            background-color:#f1c661;
+            color: black;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color:#f1c661;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Нормализация для input[type="date"] */
+        input[type="date"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            color: #555;
+            cursor: pointer;
+        }
+
+        input[type="date"]:focus {
+            border-color: #007BFF;
+            box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+            background-color: #fff;
+            outline: none;
+        }
+
+        /* Улучшение для select */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+            color: #555;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='%23555'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px 12px;
+        }
+
+        select:focus {
+            border-color: #007BFF;
+            box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+            background-color: #fff;
+            outline: none;
+        }
+
+        /* Убираем стандартную стрелку для input[type="number"] */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield; /* Firefox */
+        }
+
+        /* Стили для загрузки файла */
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-container input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            background: white;
+            cursor: pointer;
+            display: block;
+        }
+
+        .file-input-container .file-input-label {
+            display: block;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            color: #555;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            font-size: 14px;
+        }
+
+        .file-input-container .file-input-label:hover {
+            border-color: #007BFF;
+            box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
+            background-color: #fff;
+        }
+
+        /* Стили для кнопки "Сделать фото" */
+        .capture-photo-button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-bottom: 15px;
+        }
+
+        .capture-photo-button:hover {
+            background-color: #0056b3;
+        }
+
+        .capture-photo-button:active {
+            transform: scale(0.98);
+        }
+
+        /* Стили для видео и канваса */
+        video, canvas {
+            display: none;
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        /* Стили для лоадера */
+        .loader {
+            display: none;
+            position: fixed;
+            top: 30%;
+            left: 30%;
+            transform: translate(-50%, -50%);
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #007BFF;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Стили для сообщения об успешной отправке */
+        .success-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <div class="header">
+            <img src="https://raw.githubusercontent.com/PavelErsh/images/refs/heads/main/kmk.png" alt="Логотип">
+            <h5 style="color: #fdc955; font-weight: 500;">Добавить чек</h5>
+        </div>
+        <form id="paymentForm" action="/send_payment" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="username" value="{{ username }}">
+            <label for="date">Дата операции:</label>
+            <input type="date" id="date" name="date" required>
+            <script>
+                // Автоматически заполняем поле даты текущим значением
+                window.onload = function () {
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('date').value = today;
+                };
+            </script>
+
+            <label for="contract_number">Номер договора:</label>
+            <input type="number" id="contract_number" name="contract_number" placeholder="Введите номер договора" required>
+
+            <label for="accounting_type">Тип учёта:</label>
+            <select id="accounting_type" name="accounting_type" required>
+                <option value="" disabled selected>Выберите тип учёта</option>
+                <option value="Предоплата">Предоплата</option>
+                <option value="Оплата">Оплата</option>
+                <option value="Замер">Замер</option>
+            </select>
+
+            <label for="amount">Сумма:</label>
+            <input type="number" id="amount" name="amount" placeholder="" required>
+
+            <label for="payment_type">Тип оплаты:</label>
+            <select id="payment_type" name="payment_type" required>
+                <option value="" disabled selected>Выберите тип оплаты</option>
+                <option value="Перевод">Перевод</option>
+                <option value="Эквайринг">Эквайринг</option>
+            </select>
+
+            <label for="check_photo">Чек (фото):</label>
+            <div class="file-input-container">
+                <input type="file" id="check_photo" name="check_photo" accept="image/*" required>
+                <span class="file-input-label">Выберите файл</span>
+            </div>
+
+            <video id="video" playsinline autoplay></video>
+            <canvas id="canvas"></canvas>
+
+            <label for="comment">Комментарий:</label>
+            <textarea id="comment" name="comment" placeholder="Введите комментарий"></textarea>
+
+            <button type="button" onclick="submitForm()" id="submitButton">Отправить</button>
+        </form>
+    </div>
+
+    <!-- Лоадер -->
+    <div class="loader" id="loader"></div>
+
+    <!-- Сообщение об успешной отправке -->
+    <div class="success-message" id="successMessage">Данные успешно отправлены!</div>
+
+    <script>
+        async function submitForm() {
+            const form = document.getElementById('paymentForm');
+            const loader = document.getElementById('loader');
+            const successMessage = document.getElementById('successMessage');
+            const submitButton = document.getElementById('submitButton');
+
+            // Отключить кнопку отправки
+            submitButton.disabled = true;
+
+            // Показать лоадер
+            loader.style.display = 'block';
+
+            // Отправить форму
+            const formData = new FormData(form);
+            const response = await fetch(form.action, {
+                method: form.method,
+                body: formData
+            });
+
+            // Скрыть лоадер
+            loader.style.display = 'none';
+
+            if (response.ok) {
+                // Показать сообщение об успешной отправке
+                successMessage.style.display = 'block';
+
+                // Скрыть сообщение через 3 секунды
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 3000);
+            } else {
+                alert('Ошибка при отправке данных');
+            }
+
+            // Включить кнопку отправки
+            submitButton.disabled = false;
+        }
+    </script>
+</body>
+</html>
