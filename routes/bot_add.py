@@ -35,7 +35,7 @@ async def read_payment_form(request: Request, username: str,  db: AsyncSession =
     stmt = select(Accounting_types)
     result = await db.execute(stmt)
     accounting_types = result.scalars().all()
-    return templates.TemplateResponse("payment.html", {"request": request,
+    return templates.TemplateResponse("form.html", {"request": request,
                                                        "username": username,
                                                        "payment_types":payment_types,
                                                        "accounting_types":accounting_types})

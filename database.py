@@ -52,6 +52,17 @@ class Payments(Base):
     check_photo = Column(String(255))
     comment = Column(Text)
 
+class New_registrations(Base):
+    __tablename__ = "new_registrations"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    date_now = Column(DateTime)
+    username = Column(String(255))
+    fullname = Column(String(255))
+    phone = Column(String(255))
+    city = Column(String(255))
+    activity_type = Column(String(255))
+    contacts_link = Column(String(255))
+
 class Metrics(Base):
     __tablename__ = "metrics"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -64,6 +75,11 @@ class Accounting_types(Base):
 
 class Payment_types(Base):
     __tablename__ = "payment_types"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255))
+
+class Activity_types(Base):
+    __tablename__ = "activity_types"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255))
 
