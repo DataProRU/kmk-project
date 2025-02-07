@@ -378,6 +378,8 @@
             const phoneNumberInput = document.getElementById('phone');
             const cityInput = document.getElementById('city');
             const activityTypeInput = document.getElementById('activity_type');
+            const contactsLinkInput = document.getElementById('contacts_link');
+            const consentCheckbox = document.getElementById('consent');
 
 
             if (fullNameInput.value === "") {
@@ -400,6 +402,16 @@
                 return;
             }
 
+            if (contactsLinkInput.value === "") {
+                alert('Пожалуйста, укажите ссылку на портфолио, соц сети, сайт.');
+                return;
+            }
+
+            if (!consentCheckbox.checked) {
+                alert('Пожалуйста, подтвердите согласие на обработку данных.');
+                return;
+            }
+
             submitButton.disabled = true;
             loader.style.display = 'block';
 
@@ -413,7 +425,6 @@
 
             if (response.ok) {
                 successMessage.style.display = 'block';
-                resetForm();
                 setTimeout(() => {
                     successMessage.style.display = 'none';
                 }, 3000);

@@ -58,7 +58,7 @@ async def submit(
     })
 
     current_time = datetime.now(moscow_tz)
-    formatted_time = current_time.strftime("%Y-%m-%d %H:%M")
+    formatted_time = current_time.strftime("%d-%m-%Y")
     naive_current_time = current_time.replace(tzinfo=None)
 
     new_row = [
