@@ -47,6 +47,7 @@ async def submit(
 ):
 
     username = username.replace("%20", " ")
+    phone = ''.join(e for e in phone if e.isdigit())
 
     # Добавление записи в Google Таблицу
     worksheet_registration.format('A:A', {  # Форматирование столбца с датами
