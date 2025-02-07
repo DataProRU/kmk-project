@@ -53,7 +53,7 @@ async def submit(
     worksheet_registration.format('A:A', {  # Форматирование столбца с датами
         "numberFormat": {
             "type": "DATE",
-            "pattern": "dd/mm/yyyy"
+            "pattern": "dd.mm.yyyy"
         }
     })
 
