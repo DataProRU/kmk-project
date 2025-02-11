@@ -60,7 +60,7 @@ async def send_video_with_button(user_id: str):
 
     # Создаем инлайн-клавиатуру с кнопкой для вступления в канал
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="Вступить в канал", url="https://t.me/your_channel_link")]
+        [InlineKeyboardButton(text="Вступить в канал", url="https://t.me/gorod_remonta")]
     ])
 
     # Отправляем видео заметку с инлайн-кнопкой
