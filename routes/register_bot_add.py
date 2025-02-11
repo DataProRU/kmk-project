@@ -15,6 +15,9 @@ import os
 import tempfile
 import pytz
 
+from register_bot import send_video_with_button
+
+
 router = APIRouter()
 templates = Jinja2Templates(directory="templates/register_bot")
 
@@ -26,18 +29,20 @@ worksheet_registration = sht2.get_worksheet(0)
 moscow_tz = pytz.timezone('Europe/Moscow')
 
 @router.get("/register_bot_add", response_class=HTMLResponse)
-async def read_register_form(request: Request, username: str,  db: AsyncSession = Depends(get_db), ):
+async def read_register_form(request: Request, username: str,  user_id: str, db: AsyncSession = Depends(get_db), ):
     stmt = select(Activity_types)
     result = await db.execute(stmt)
     activity_types = result.scalars().all()
     return templates.TemplateResponse("form.html", {"request": request,
-                                                       "username": username,
-                                                       "activity_types": activity_types})
+                                                    "username": username,
+                                                    "user_id": user_id,
+                                                    "activity_types": activity_types})
 
 
 @router.post("/send_registration")
 async def submit(
     username: str = Form(),
+    user_id: str = Form(),
     fullname: str = Form(),
     phone: str = Form(),
     city: str = Form(),
@@ -47,6 +52,8 @@ async def submit(
 ):
 
     username = username.replace("%20", " ")
+    await send_video_with_button(user_id)
+
     phone = ''.join(e for e in phone if e.isdigit())
 
     # Добавление записи в Google Таблицу

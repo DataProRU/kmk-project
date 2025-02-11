@@ -325,6 +325,7 @@
         </div>
         <form id="registrationForm" action="/send_registration" method="post" enctype="multipart/form-data">
             <input type="hidden" name="username" value="{{ username }}">
+            <input type="hidden" name="user_id" value="{{ user_id }}">
 
             <label for="fullname">ФИО<span class="required">*</span></label>
             <input type="text" id="fullname" name="fullname" placeholder="Укажите ФИО" required>
@@ -425,9 +426,11 @@
 
             if (response.ok) {
                 successMessage.style.display = 'block';
+                this.reset();
                 setTimeout(() => {
                     successMessage.style.display = 'none';
                 }, 3000);
+                window.Telegram.WebApp.close();
             } else {
                 alert('Ошибка при отправке данных');
             }
