@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-
+# Устанавливаем необходимые библиотеки
 RUN pip install asyncpg sqlalchemy[asyncio]
+
 # Обновляем pip
 RUN pip install --upgrade pip
 
@@ -19,9 +20,8 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-
 # Копируем все файлы проекта
 COPY . .
 
-# Указываем команду по умолчанию для запуска приложения через uvicorn
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000 --reload"]
+# Указываем команду для запуска обоих процессов
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000 --reload & python register_bot.py"]
