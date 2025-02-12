@@ -39,7 +39,7 @@ async def start_command_handler(message: types.Message):
     tg_username = message.from_user.username
     user_id = message.from_user.id
 
-    web_app_url_with_params = f"{WEB_APP_URL}?username={tg_username}?user_id={user_id}"
+    web_app_url_with_params = f"{WEB_APP_URL}?username={tg_username}&user_id={user_id}"
 
     # Создаем инлайн-клавиатуру с кнопкой для мини-приложения
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
