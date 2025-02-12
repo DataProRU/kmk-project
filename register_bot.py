@@ -57,16 +57,19 @@ async def start_command_handler(message: types.Message):
 async def send_video_with_button(user_id: str):
     # Путь к видеофайлу
     video_path = "static/video/video.mp4"
-
+    
     # Создаем инлайн-клавиатуру с кнопкой для вступления в канал
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Вступить в канал", url="https://t.me/gorod_remonta")]
     ])
-
-    # Отправляем видео заметку с инлайн-кнопкой
+    
+    # Используем FSInputFile для загрузки видео из локальной файловой системы
+    video_file = FSInputFile(video_path)
+    
+    # Отправляем video note с инлайн-кнопкой
     await bot.send_video_note(
         chat_id=user_id,
-        video_note=InputFile(video_path),
+        video_note=video_file,  # Передаем объект FSInputFile
         reply_markup=keyboard
     )
 
