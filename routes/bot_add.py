@@ -14,6 +14,7 @@ from googleapiclient.http import MediaFileUpload
 import os
 import tempfile
 import pytz
+import textwrap
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -38,6 +39,15 @@ async def read_payment_form(request: Request, username: str,  db: AsyncSession =
                                                        "username": username,
                                                        "payment_types":payment_types,
                                                        "accounting_types":accounting_types})
+import requests
+
+TELEGRAM_BOT_TOKEN = '8026129849:AAGOsU3cTOIAByhwcZ-9TC11I5RavvXZrDg'
+TELEGRAM_CHAT_ID = '-1002237584508'
+
+# Ваши настройки для Google Drive и Google Sheets
+SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
+SERVICE_ACCOUNT_FILE = 'midyear-cursor-379909-cc15f63beea0.json'
+
 @router.post("/send_payment")
 async def submit_payment(
     username: str = Form(),
@@ -123,6 +133,44 @@ async def submit_payment(
         comment=comment
     )
     await db.execute(new_payment)
+    date_obj = datetime.strptime(formatted_date, "%d/%m/%Y")
+    print(username)
+
+    '''stmt = select(Users).where(Users.tg_username == username)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        # Если пользователь не найден, можно вернуть ошибку или выполнить другие действия
+        return "not"
+
+    # Получаем username из найденного пользователя
+    full_username = user.username'''
+
+    # Форматируем дату с использованием точек
+    formatted_date_with_dots = date_obj.strftime("%d.%m.%Y")
+
+    telegram_message = textwrap.dedent(f"""
+           💵 Новое поступление
+           #{accounting_type} {amount} руб.
+           Тип оплаты: {payment_type}
+           от {formatted_date_with_dots}
+
+           Внес: #{username}
+           № договора: {contract_number}
+           Примечание: {comment if comment else "Нет примечания"}
+
+           <a href="{photo_url}">Ссылка на чек</a>
+       """).strip()
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": telegram_message,
+        "parse_mode": "HTML"
+    }
+    response = requests.post(url, json=payload)
+    print(response.text)
 
     return {"message": "Чек успешно отправлен", "photo_url": photo_url}
 
