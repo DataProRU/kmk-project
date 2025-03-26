@@ -186,7 +186,7 @@ async def read_root(request: Request, username: str, tg_username: str, db: Async
 
 @router.post("/send_report")
 async def submit_report(
-        date: str = Form(...),
+        contract_number: str = Form(...),
         username: str = Form(...),
         tg_username: str = Form(...),
         accounting_type: str = Form(...),
@@ -220,7 +220,7 @@ async def submit_report(
 
     permission = {
         'type': 'user',
-        'role': 'writer',  # 'writer' для прав редактирования, 'reader' для только чтения
+        'role': 'writer',
         'emailAddress': 'gma89618507928@gmail.com'
     }
     drive_service.permissions().create(fileId=file_id, body=permission, fields='id').execute()
@@ -234,28 +234,27 @@ async def submit_report(
     })
 
     current_time = datetime.now(moscow_tz).strftime("%Y-%m-%d %H:%M")
-    date_obj = datetime.strptime(date, "%Y-%m-%d").date()
-    formatted_date = date_obj.strftime("%d/%m/%Y")  # Если нужно отобразить как dd.mm.yyyy
 
     new_row = [
         str(current_time),
         str(tg_username),
         str(username),
-        formatted_date,
+        str(contract_number),
         str(accounting_type),
         str(photo_url),
         str(comment)
     ]
     worksheet_payment.append_row(new_row, value_input_option="USER_ENTERED")
 
-    new_payment = New_Reports.__table__.insert().values(
-        date=date_obj,
+    '''new_payment = New_Reports.__table__.insert().values(
+        contract_number=contract_number,
         username=username,
         tg_username=tg_username,
         accounting_type=accounting_type,
         check_photo=photo_url,
-        comment=comment
+        comment=comment,
+        date=datetime.now(moscow_tz).date()  # Добавляем текущую дату
     )
-    await db.execute(new_payment)
+    await db.execute(new_payment)'''
 
     return {"message": "Отчет успешно отправлен"}
