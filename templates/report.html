@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Добавить чек</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -323,23 +323,17 @@
     <div class="form-container">
         <div class="header">
             <img src="https://raw.githubusercontent.com/PavelErsh/images/refs/heads/main/kmk.png" alt="Логотип">
-            <h4 style="color: #fdc955; font-weight: bold; font-size: 15px;">Отчёт сотрудника</h4>
+            <h4 style="color: #fdc955; font-weight: bold; font-size: 15px;">Прими работу ответственно,<br> сделай работу качественно</h4>
         </div>
         <form id="paymentForm" action="/send_report" method="post" enctype="multipart/form-data">
             <input type="hidden" name="username" value="{{ username }}">
             <input type="hidden" name="tg_username" value="{{ tg_username }}">
-            <label for="date">Дата отчёта:</label>
-            <input type="date" id="date" name="date" required>
-            <script>
-                window.onload = function () {
-                    const today = new Date().toISOString().split('T')[0];
-                    document.getElementById('date').value = today;
-                };
-            </script>
+            <label for="contract_number">№ договора:</label>
+            <input placeholder="Введите № договора" type="text" id="contract_number" name="contract_number" required>
 
-            <label for="accounting_type">Метрика: <span class="required">*</span></label>
+            <label for="accounting_type">Этап работ: <span class="required">*</span></label>
             <select id="accounting_type" name="accounting_type" required>
-                <option value="" disabled selected>Выберите метрику</option>
+                <option value="" disabled selected>Выберите этап работы</option>
                 {% for metric in all_metrics %}
                 <option value="{{ metric.name }}">{{ metric.name }}</option>
                 {% endfor %}
@@ -383,6 +377,7 @@
             const checkPhotoInputCamera = document.getElementById('check_photo_camera');
             const checkPhotoInputGallery = document.getElementById('check_photo_gallery');
             const accountingTypeInput = document.getElementById('accounting_type');
+            const contractNumberInput = document.getElementById('contract_number');
 
             if (checkPhotoInputCamera.files.length === 0 && checkPhotoInputGallery.files.length === 0) {
                 alert('Пожалуйста, добавьте визуальное доказательство.');
@@ -391,6 +386,11 @@
 
             if (accountingTypeInput.value === "") {
                 alert('Пожалуйста, выберите метрику.');
+                return;
+            }
+
+            if (!contractNumberInput.value.trim()) {
+                alert('Пожалуйста, введите номер договора.');
                 return;
             }
 
@@ -421,8 +421,6 @@
         function resetForm() {
             const form = document.getElementById('paymentForm');
             form.reset();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('date').value = today;
             document.getElementById('accounting_type').selectedIndex = 0;
             document.getElementById('check_photo_camera').value = '';
             document.getElementById('check_photo_gallery').value = '';
@@ -463,4 +461,3 @@
         }
     </script>
 </body>
-</html>
