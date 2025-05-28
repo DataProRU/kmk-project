@@ -1,6 +1,6 @@
 import asyncio
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, InputFile
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, FSInputFile
 from aiogram.filters import Command
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -15,8 +15,8 @@ async_engine = create_async_engine(DATABASE_URL, echo=True)
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 # URL мини-приложения
-# WEB_APP_URL = "https://garage-garageshop.amvera.io/register_bot_add"
-WEB_APP_URL = "http://127.0.0.1:8000/register_bot_add"
+WEB_APP_URL = "https://kmk-meb-test.ru/register_bot_add"
+# WEB_APP_URL = "http://127.0.0.1:8000/register_bot_add"
 
 # Инициализация бота
 bot = Bot(token=BOT_TOKEN)
