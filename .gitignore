@@ -1,1 +1,10 @@
+.idea
+__pycache__
+venv_name
+.DS_Store
 midyear-cursor-379909-cc15f63beea0.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+idea/
+backup.sql
