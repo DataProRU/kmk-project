@@ -1,0 +1,13 @@
+[Unit]
+Description=Register Telegram Bot
+After=network.target
+
+[Service]
+WorkingDirectory=/root/kmk-project
+ExecStart=/root/kmk-project/.venv/bin/python3 register_bot.py
+Restart=always
+StandardOutput=append:/var/log/register_bot.log
+StandardError=append:/var/log/register_bot_error.log
+
+[Install]
+WantedBy=multi-user.target

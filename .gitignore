@@ -8,4 +8,9 @@ midyear-cursor-379909-cc15f63beea0.json
 __pycache__/
 .idea/
 backup.sql
-nohup.out
+uvicorn.log
+uvicorn_error.log
+bot.log
+bot_error.log
+register_bot.log
+register_bot_error.log
