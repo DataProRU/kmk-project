@@ -1,0 +1,19 @@
+.idea
+__pycache__
+venv
+.venv
+.DS_Store
+midyear-cursor-379909-cc15f63beea0.json
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.idea/
+backup.sql
+uvicorn.log
+uvicorn_error.log
+bot.log
+bot_error.log
+register_bot.log
+register_bot_error.log
+
+.env

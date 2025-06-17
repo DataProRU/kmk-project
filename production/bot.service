@@ -1,0 +1,13 @@
+[Unit]
+Description=Telegram Bot
+After=network.target
+
+[Service]
+WorkingDirectory=/root/kmk-project
+ExecStart=/root/kmk-project/.venv/bin/python3 bot.py
+Restart=always
+StandardOutput=append:/var/log/bot.log
+StandardError=append:/var/log/bot_error.log
+
+[Install]
+WantedBy=multi-user.target
