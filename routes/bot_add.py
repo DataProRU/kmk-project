@@ -119,7 +119,7 @@ async def submit_payment(
         temp_file_path = temp_file.name
 
     file_metadata = {'name': check_photo.filename}
-    path, final_mime = await handle_and_convert_image(file)
+    path, final_mime = await handle_and_convert_image(check_photo)
     media = MediaFileUpload(path, mimetype=final_mime, resumable=True)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
 
