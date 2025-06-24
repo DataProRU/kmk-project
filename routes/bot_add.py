@@ -42,45 +42,37 @@ async def read_payment_form(request: Request, username: str,  db: AsyncSession =
                                                        "payment_types":payment_types,
                                                        "accounting_types":accounting_types})
 import requests
-import magic
 
 import magic
 import pyheif
 from PIL import Image
-import tempfile
-from fastapi import UploadFile
-from typing import Tuple
-
-async def handle_and_convert_image(upload_file: UploadFile) -> Tuple[str, str]:
-    """
-    Принимает файл, определяет MIME-тип, при необходимости конвертирует HEIC в JPEG.
-    Возвращает путь к файлу и итоговый MIME-тип.
-    """
-    contents = await upload_file.read()
+from io import BytesIO
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.responses import StreamingResponse
+async def convert_to_jpeg_bytes(file: UploadFile) -> bytes:
+    contents = await file.read()
     mime_type = magic.from_buffer(contents, mime=True)
 
-    if not mime_type.startswith("image/"):
-        raise ValueError("Файл не является изображением")
-
-    if mime_type == "image/heic":
+    # Если mime_type application/octet-stream — пытаемся открыть как изображение
+    if mime_type == "application/octet-stream":
+        try:
+            image = Image.open(BytesIO(contents))
+        except Exception:
+            raise HTTPException(status_code=400, detail="Невозможно распознать файл как изображение")
+    elif mime_type == "image/heic":
         heif_file = pyheif.read(contents)
         image = Image.frombytes(
             heif_file.mode, heif_file.size, heif_file.data, "raw", heif_file.mode
         )
-
-        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
-            image.save(temp_file.name, format="JPEG")
-            return temp_file.name, "image/jpeg"
+    elif mime_type.startswith("image/"):
+        image = Image.open(BytesIO(contents))
     else:
-        # Просто сохраняем JPEG, PNG и другие поддерживаемые форматы
-        ext = {
-            "image/jpeg": ".jpg",
-            "image/png": ".png"
-        }.get(mime_type, ".jpg")  # По умолчанию .jpg
+        raise HTTPException(status_code=400, detail=f"Unsupported file type: {mime_type}")
 
-        with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as temp_file:
-            temp_file.write(contents)
-            return temp_file.name, mime_type
+    jpeg_buffer = BytesIO()
+    image.convert("RGB").save(jpeg_buffer, format="JPEG")
+    jpeg_buffer.seek(0)
+    return jpeg_buffer.getvalue()
 
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("BOT_CHAT_ID")
@@ -115,12 +107,13 @@ async def submit_payment(
 
     # Сохранение файла во временную директорию
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        temp_file.write(await check_photo.read())
+        jpeg_bytes = await convert_to_jpeg_bytes(check_photo)
+        temp_file.write(jpeg_bytes)
         temp_file_path = temp_file.name
 
     file_metadata = {'name': check_photo.filename}
-    path, final_mime = await handle_and_convert_image(check_photo)
-    media = MediaFileUpload(path, mimetype=final_mime, resumable=True)
+    
+    media = MediaFileUpload(temp_file_path, mimetype=magic.from_buffer(jpeg_bytes, mime=True), resumable=True)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
 
     file_id = file.get('id')
