@@ -50,6 +50,17 @@ TELEGRAM_CHAT_ID = os.getenv("BOT_CHAT_ID")
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
 SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_TABLES_CREDENTIALS_FILE")
 
+
+import pyheif
+from PIL import Image
+def convert_heic_to_jpeg(src_path, dst_path):
+    heif_file = pyheif.read(src_path)
+    image = Image.frombytes(
+        heif_file.mode, heif_file.size, heif_file.data,
+        "raw", heif_file.mode
+    )
+    image.save(dst_path, format="JPEG")
+
 @router.post("/send_payment")
 async def submit_payment(
     username: str = Form(),
@@ -80,12 +91,22 @@ async def submit_payment(
         temp_file_path = temp_file.name
 
     file_metadata = {'name': check_photo.filename}
+    
+    if check_photo.filename.lower().endswith(".heic"):
+        converted_path = temp_file_path + ".jpg"
+        convert_heic_to_jpeg(temp_file_path, converted_path)
+        upload_path = converted_path
+        mimetype = 'image/jpeg'
+    else:
+        upload_path = temp_file_path
+        mimetype = check_photo.content_type
+    
     media = MediaFileUpload(temp_file_path, mimetype=check_photo.content_type, resumable=True)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
 
     file_id = file.get('id')
     photo_url = file.get('webViewLink')
-
+    print(temp_file_path, media, check_photo.content_type)
     # Удаление временного файла
     os.remove(temp_file_path)
 
