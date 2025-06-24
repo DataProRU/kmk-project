@@ -44,6 +44,44 @@ async def read_payment_form(request: Request, username: str,  db: AsyncSession =
 import requests
 import magic
 
+import magic
+import pyheif
+from PIL import Image
+import tempfile
+from fastapi import UploadFile
+from typing import Tuple
+
+async def handle_and_convert_image(upload_file: UploadFile) -> Tuple[str, str]:
+    """
+    Принимает файл, определяет MIME-тип, при необходимости конвертирует HEIC в JPEG.
+    Возвращает путь к файлу и итоговый MIME-тип.
+    """
+    contents = await upload_file.read()
+    mime_type = magic.from_buffer(contents, mime=True)
+
+    if not mime_type.startswith("image/"):
+        raise ValueError("Файл не является изображением")
+
+    if mime_type == "image/heic":
+        heif_file = pyheif.read(contents)
+        image = Image.frombytes(
+            heif_file.mode, heif_file.size, heif_file.data, "raw", heif_file.mode
+        )
+
+        with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
+            image.save(temp_file.name, format="JPEG")
+            return temp_file.name, "image/jpeg"
+    else:
+        # Просто сохраняем JPEG, PNG и другие поддерживаемые форматы
+        ext = {
+            "image/jpeg": ".jpg",
+            "image/png": ".png"
+        }.get(mime_type, ".jpg")  # По умолчанию .jpg
+
+        with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as temp_file:
+            temp_file.write(contents)
+            return temp_file.name, mime_type
+
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("BOT_CHAT_ID")
 
@@ -81,8 +119,8 @@ async def submit_payment(
         temp_file_path = temp_file.name
 
     file_metadata = {'name': check_photo.filename}
-    mime_type = magic.from_buffer(await check_photo.read(), mime=True)
-    media = MediaFileUpload(temp_file_path, mimetype=mime_type, resumable=True)
+    path, final_mime = await handle_and_convert_image(file)
+    media = MediaFileUpload(path, mimetype=final_mime, resumable=True)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
 
     file_id = file.get('id')
