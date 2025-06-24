@@ -81,7 +81,7 @@ async def submit_payment(
         temp_file_path = temp_file.name
 
     file_metadata = {'name': check_photo.filename}
-    mime_type = magic.from_buffer(check_photo, mime=True)
+    mime_type = magic.from_buffer(await check_photo.read(), mime=True)
     media = MediaFileUpload(temp_file_path, mimetype=mime_type, resumable=True)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
 
