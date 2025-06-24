@@ -101,7 +101,7 @@ async def submit_payment(
         upload_path = temp_file_path
         mimetype = check_photo.content_type
     
-    media = MediaFileUpload(temp_file_path, mimetype=check_photo.content_type, resumable=True)
+    media = MediaFileUpload(upload_path, mimetype=mimetype, resumable=True)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
 
     file_id = file.get('id')
