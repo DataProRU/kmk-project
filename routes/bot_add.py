@@ -42,6 +42,7 @@ async def read_payment_form(request: Request, username: str,  db: AsyncSession =
                                                        "payment_types":payment_types,
                                                        "accounting_types":accounting_types})
 import requests
+import magic
 
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("BOT_CHAT_ID")
@@ -49,17 +50,6 @@ TELEGRAM_CHAT_ID = os.getenv("BOT_CHAT_ID")
 # Ваши настройки для Google Drive и Google Sheets
 SCOPES = ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/spreadsheets']
 SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_TABLES_CREDENTIALS_FILE")
-
-
-import pyheif
-from PIL import Image
-def convert_heic_to_jpeg(src_path, dst_path):
-    heif_file = pyheif.read(src_path)
-    image = Image.frombytes(
-        heif_file.mode, heif_file.size, heif_file.data,
-        "raw", heif_file.mode
-    )
-    image.save(dst_path, format="JPEG")
 
 @router.post("/send_payment")
 async def submit_payment(
@@ -91,17 +81,8 @@ async def submit_payment(
         temp_file_path = temp_file.name
 
     file_metadata = {'name': check_photo.filename}
-    print(check_photo.filename.lower())
-    if check_photo.filename.lower().endswith(".heic"):
-        converted_path = temp_file_path + ".jpg"
-        convert_heic_to_jpeg(temp_file_path, converted_path)
-        upload_path = converted_path
-        mimetype = 'image/jpeg'
-    else:
-        upload_path = temp_file_path
-        mimetype = check_photo.content_type
-    
-    media = MediaFileUpload(upload_path, mimetype=mimetype, resumable=True)
+    mime_type = magic.from_buffer(check_photo, mime=True)
+    media = MediaFileUpload(temp_file_path, mimetype=mime_type, resumable=True)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
 
     file_id = file.get('id')
