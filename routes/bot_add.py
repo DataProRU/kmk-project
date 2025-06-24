@@ -43,37 +43,6 @@ async def read_payment_form(request: Request, username: str,  db: AsyncSession =
                                                        "accounting_types":accounting_types})
 import requests
 
-import magic
-import pyheif
-from PIL import Image
-from io import BytesIO
-from fastapi import FastAPI, UploadFile, File, HTTPException
-from fastapi.responses import StreamingResponse
-async def convert_to_jpeg_bytes(file: UploadFile) -> bytes:
-    contents = await file.read()
-    mime_type = magic.from_buffer(contents, mime=True)
-
-    # Если mime_type application/octet-stream — пытаемся открыть как изображение
-    if mime_type == "application/octet-stream":
-        try:
-            image = Image.open(BytesIO(contents))
-        except Exception:
-            raise HTTPException(status_code=400, detail="Невозможно распознать файл как изображение")
-    elif mime_type == "image/heic":
-        heif_file = pyheif.read(contents)
-        image = Image.frombytes(
-            heif_file.mode, heif_file.size, heif_file.data, "raw", heif_file.mode
-        )
-    elif mime_type.startswith("image/"):
-        image = Image.open(BytesIO(contents))
-    else:
-        raise HTTPException(status_code=400, detail=f"Unsupported file type: {mime_type}")
-
-    jpeg_buffer = BytesIO()
-    image.convert("RGB").save(jpeg_buffer, format="JPEG")
-    jpeg_buffer.seek(0)
-    return jpeg_buffer.getvalue()
-
 TELEGRAM_BOT_TOKEN = os.getenv("BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("BOT_CHAT_ID")
 
@@ -107,18 +76,16 @@ async def submit_payment(
 
     # Сохранение файла во временную директорию
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        jpeg_bytes = await convert_to_jpeg_bytes(check_photo)
-        temp_file.write(jpeg_bytes)
+        temp_file.write(await check_photo.read())
         temp_file_path = temp_file.name
 
     file_metadata = {'name': check_photo.filename}
-    
-    media = MediaFileUpload(temp_file_path, mimetype=magic.from_buffer(jpeg_bytes, mime=True), resumable=True)
+    media = MediaFileUpload(temp_file_path, mimetype=check_photo.content_type, resumable=True)
     file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
 
     file_id = file.get('id')
     photo_url = file.get('webViewLink')
-    print(temp_file_path, media, check_photo.content_type)
+
     # Удаление временного файла
     os.remove(temp_file_path)
 
