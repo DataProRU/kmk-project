@@ -91,7 +91,7 @@ async def submit_payment(
         temp_file_path = temp_file.name
 
     file_metadata = {'name': check_photo.filename}
-    
+    print(check_photo.filename.lower())
     if check_photo.filename.lower().endswith(".heic"):
         converted_path = temp_file_path + ".jpg"
         convert_heic_to_jpeg(temp_file_path, converted_path)
