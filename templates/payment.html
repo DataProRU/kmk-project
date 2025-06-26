@@ -365,19 +365,21 @@
     <button class="floating-button"> <span class="material-icons">keyboard_hide</span></button>
 
     <script>
+        // Глобальная переменная для хранения текущего файла
+        let currentFile = null;
+
         async function submitForm() {
             const form = document.getElementById('paymentForm');
             const loader = document.getElementById('loader');
             const successMessage = document.getElementById('successMessage');
             const submitButton = document.getElementById('submitButton');
-            const checkPhotoInputCamera = document.getElementById('check_photo_camera');
-            const checkPhotoInputGallery = document.getElementById('check_photo_gallery');
             const contractNumberInput = document.getElementById('contract_number');
             const accountingTypeInput = document.getElementById('accounting_type');
             const amountInput = document.getElementById('amount');
             const paymentTypeInput = document.getElementById('payment_type');
 
-            if (checkPhotoInputCamera.files.length === 0 && checkPhotoInputGallery.files.length === 0) {
+            // Проверка обязательных полей
+            if (!currentFile) {
                 alert('Пожалуйста, добавьте фото чека.');
                 return;
             }
@@ -405,25 +407,34 @@
             submitButton.disabled = true;
             loader.style.display = 'block';
 
-            const formData = new FormData(form);
-            const response = await fetch(form.action, {
-                method: form.method,
-                body: formData
-            });
+            try {
+                const formData = new FormData(form);
 
-            loader.style.display = 'none';
+                // Добавляем файл в FormData вручную
+                formData.set('check_photo', currentFile);
 
-            if (response.ok) {
-                successMessage.style.display = 'block';
-                resetForm();
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 3000);
-            } else {
-                alert('Ошибка при отправке данных');
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: formData
+                });
+
+                if (response.ok) {
+                    successMessage.style.display = 'block';
+                    resetForm();
+                    setTimeout(() => {
+                        successMessage.style.display = 'none';
+                    }, 3000);
+                } else {
+                    const errorData = await response.json();
+                    alert('Ошибка при отправке данных: ' + (errorData.message || 'Неизвестная ошибка'));
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('Произошла ошибка при отправке: ' + error.message);
+            } finally {
+                loader.style.display = 'none';
+                submitButton.disabled = false;
             }
-
-            submitButton.disabled = false;
         }
 
         function resetForm() {
@@ -432,10 +443,8 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date').value = today;
             document.getElementById('accounting_type').selectedIndex = 0;
-            document.getElementById('check_photo_camera').value = '';
-            document.getElementById('check_photo_gallery').value = '';
-            document.getElementById('comment').value = '';
             document.getElementById('thumbnailContainer').style.display = 'none';
+            currentFile = null;
         }
 
         function confirmDeletePhoto() {
@@ -448,27 +457,29 @@
             document.getElementById('thumbnailContainer').style.display = 'none';
             document.getElementById('check_photo_camera').value = '';
             document.getElementById('check_photo_gallery').value = '';
+            currentFile = null;
         }
-
-        document.getElementById('check_photo_camera').addEventListener('change', function(event) {
-            handleFileChange(event);
-        });
-
-        document.getElementById('check_photo_gallery').addEventListener('change', function(event) {
-            handleFileChange(event);
-        });
 
         function handleFileChange(event) {
             const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('thumbnail').src = e.target.result;
-                    document.getElementById('thumbnailContainer').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
-            }
+            if (!file) return;
+
+            currentFile = file;
+
+            const thumbnailContainer = document.getElementById('thumbnailContainer');
+            const thumbnail = document.getElementById('thumbnail');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                thumbnail.src = e.target.result;
+                thumbnailContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
         }
+
+        // Назначаем обработчики
+        document.getElementById('check_photo_camera').addEventListener('change', handleFileChange);
+        document.getElementById('check_photo_gallery').addEventListener('change', handleFileChange);
     </script>
 </body>
 </html>
