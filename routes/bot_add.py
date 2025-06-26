@@ -259,4 +259,27 @@ async def submit_report(
     )
     await db.execute(new_payment)'''
 
+    date = datetime.now(moscow_tz)
+
+    formatted_date_with_dots = date.strftime("%d.%m.%Y")
+
+    telegram_message = textwrap.dedent(f"""
+           💵 Новый этап договора
+           от {formatted_date_with_dots}
+           {username}
+           № договора: {contract_number}
+           Этап работ: {accounting_type} 
+           Примечание: {comment if comment else "Нет примечания"}
+
+           <a href="{photo_url}">Ссылка на чек</a>
+       """).strip()
+
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": telegram_message,
+        "parse_mode": "HTML"
+    }
+    requests.post(url, json=payload)
+
     return {"message": "Отчет успешно отправлен"}
