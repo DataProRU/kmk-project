@@ -171,51 +171,6 @@
         -moz-appearance: textfield;
       }
 
-      .file-input-container {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 15px;
-      }
-
-      .file-input-container input[type='file'] {
-        position: absolute;
-        top: 0;
-        right: 0;
-        min-width: 100%;
-        min-height: 100%;
-        font-size: 100px;
-        text-align: right;
-        filter: alpha(opacity=0);
-        opacity: 0;
-        outline: none;
-        background: white;
-        cursor: pointer;
-        display: block;
-      }
-
-      .file-input-container .file-input-label {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        color: #555;
-        text-align: center;
-        cursor: pointer;
-        transition: border-color 0.3s, box-shadow 0.3s;
-        font-size: 14px;
-        flex: 1;
-        margin-right: 10px;
-      }
-
-      .file-input-container .file-input-label:hover {
-        border-color: #007bff;
-        box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
-        background-color: #fff;
-      }
-
       .loader {
         display: none;
         position: fixed;
@@ -278,33 +233,6 @@
         transition: transform 0.3s ease;
         margin-right: 2%;
         z-index: 5;
-      }
-
-      .thumbnail-container {
-        margin-top: 15px;
-        position: relative;
-      }
-
-      .thumbnail-container img {
-        width: 100%;
-        border-radius: 8px;
-      }
-
-      .thumbnail-container .delete-button {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: red;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 16px;
       }
     </style>
   </head>
@@ -374,56 +302,6 @@
           {% endfor %}
         </select>
 
-        <label for="check_photo"
-          >Чек (фото): <span class="required">*</span></label
-        >
-        <div class="file-input-container">
-          <input
-            type="file"
-            id="check_photo_camera"
-            name="check_photo"
-            accept="image/*"
-            capture="environment"
-            style="display: none"
-          />
-          <button
-            type="button"
-            class="file-input-label"
-            onclick="document.getElementById('check_photo_camera').click()"
-          >
-            <span class="material-icons">camera_alt</span>
-          </button>
-          <input
-            type="file"
-            id="check_photo_gallery"
-            name="check_photo"
-            accept="image/*"
-            style="display: none"
-          />
-          <button
-            type="button"
-            class="file-input-label"
-            onclick="document.getElementById('check_photo_gallery').click()"
-          >
-            <span class="material-icons">photo_library</span>
-          </button>
-        </div>
-
-        <div
-          class="thumbnail-container"
-          id="thumbnailContainer"
-          style="display: none"
-        >
-          <img id="thumbnail" src="" alt="Миниатюра" />
-          <button
-            type="button"
-            class="delete-button"
-            onclick="confirmDeletePhoto()"
-          >
-            ×
-          </button>
-        </div>
-
         <label for="comment">Комментарий:</label>
         <textarea
           id="comment"
@@ -447,9 +325,6 @@
     </button>
 
     <script>
-      // Глобальная переменная для хранения текущего файла
-      let currentFile = null;
-
       async function submitForm() {
         const form = document.getElementById('paymentForm');
         const loader = document.getElementById('loader');
@@ -461,11 +336,6 @@
         const paymentTypeInput = document.getElementById('payment_type');
 
         // Проверка обязательных полей
-        if (!currentFile) {
-          alert('Пожалуйста, добавьте фото чека.');
-          return;
-        }
-
         if (contractNumberInput.value === '') {
           alert('Пожалуйста, введите номер договора.');
           return;
@@ -491,9 +361,6 @@
 
         try {
           const formData = new FormData(form);
-
-          // Добавляем файл в FormData вручную
-          formData.set('check_photo', currentFile);
 
           const response = await fetch(form.action, {
             method: form.method,
@@ -528,48 +395,7 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('date').value = today;
         document.getElementById('accounting_type').selectedIndex = 0;
-        document.getElementById('thumbnailContainer').style.display = 'none';
-        currentFile = null;
       }
-
-      function confirmDeletePhoto() {
-        if (confirm('Вы уверены, что хотите удалить фото?')) {
-          deletePhoto();
-        }
-      }
-
-      function deletePhoto() {
-        document.getElementById('thumbnailContainer').style.display = 'none';
-        document.getElementById('check_photo_camera').value = '';
-        document.getElementById('check_photo_gallery').value = '';
-        currentFile = null;
-      }
-
-      function handleFileChange(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-
-        currentFile = file;
-
-        const thumbnailContainer =
-          document.getElementById('thumbnailContainer');
-        const thumbnail = document.getElementById('thumbnail');
-
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          thumbnail.src = e.target.result;
-          thumbnailContainer.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-      }
-
-      // Назначаем обработчики
-      document
-        .getElementById('check_photo_camera')
-        .addEventListener('change', handleFileChange);
-      document
-        .getElementById('check_photo_gallery')
-        .addEventListener('change', handleFileChange);
     </script>
   </body>
 </html>

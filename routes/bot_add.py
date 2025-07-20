@@ -59,42 +59,11 @@ async def submit_payment(
     amount: int = Form(...),
     payment_type: str = Form(...),
     comment: Optional[str] = Form(None),
-    check_photo: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
     # Convert date string to Date object
     date_obj = datetime.strptime(date, "%Y-%m-%d").date()
     username = username.replace("%20", " ")
-
-    # Сохранение фото на Google Диск
-    SCOPES = ['https://www.googleapis.com/auth/drive']
-    SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_TABLES_CREDENTIALS_FILE")
-
-    credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    drive_service = build('drive', 'v3', credentials=credentials)
-
-    # Сохранение файла во временную директорию
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        temp_file.write(await check_photo.read())
-        temp_file_path = temp_file.name
-
-    file_metadata = {'name': check_photo.filename}
-    media = MediaFileUpload(temp_file_path, mimetype=check_photo.content_type, resumable=True)
-    file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
-
-    file_id = file.get('id')
-    photo_url = file.get('webViewLink')
-
-    # Удаление временного файла
-    os.remove(temp_file_path)
-
-    permission = {
-        'type': 'user',
-        'role': 'writer',  # 'writer' для прав редактирования, 'reader' для только чтения
-        'emailAddress': os.getenv("EMAIL")
-    }
-    drive_service.permissions().create(fileId=file_id, body=permission, fields='id').execute()
 
     # Добавление записи в Google Таблицу
     worksheet_report.format('C:C', {  # Форматирование столбца с датами
@@ -115,7 +84,7 @@ async def submit_payment(
         accounting_type,
         amount,
         payment_type,
-        photo_url,
+        '',
         comment
     ]
     worksheet_report.append_row(new_row, value_input_option="USER_ENTERED")
@@ -131,7 +100,7 @@ async def submit_payment(
         contact_number=contract_number,
         accounting_type=accounting_type,
         payment_type=payment_type,
-        check_photo=photo_url,
+        check_photo='',
         comment=comment
     )
     await db.execute(new_payment)
@@ -161,8 +130,6 @@ async def submit_payment(
            Внес: #{username}
            № договора: {contract_number}
            Примечание: {comment if comment else "Нет примечания"}
-
-           <a href="{photo_url}">Ссылка на чек</a>
        """).strip()
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
@@ -174,7 +141,7 @@ async def submit_payment(
     response = requests.post(url, json=payload)
     print(response.text)
 
-    return {"message": "Чек успешно отправлен", "photo_url": photo_url}
+    return {"message": "Чек успешно отправлен", "photo_url": 'photo_url'}
 
 
 @router.get("/report/{tg_username}", response_class=HTMLResponse)
@@ -192,40 +159,13 @@ async def submit_report(
         username: str = Form(...),
         tg_username: str = Form(...),
         accounting_type: str = Form(...),
-        check_photo: UploadFile = File(...),
         comment: Optional[str] = Form(None),
         db: AsyncSession = Depends(get_db),
 ):
-    # Сохранение фото на Google Диск
-    SCOPES = ['https://www.googleapis.com/auth/drive']
-    SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_TABLES_CREDENTIALS_FILE")
     username = username.replace("%20", " ")
 
     credentials = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-    drive_service = build('drive', 'v3', credentials=credentials)
-
-    # Сохранение файла во временную директорию
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-        temp_file.write(await check_photo.read())
-        temp_file_path = temp_file.name
-
-    file_metadata = {'name': check_photo.filename}
-    media = MediaFileUpload(temp_file_path, mimetype=check_photo.content_type, resumable=True)
-    file = drive_service.files().create(body=file_metadata, media_body=media, fields='id, webViewLink').execute()
-
-    photo_url = file.get('webViewLink')
-    file_id = file.get('id')
-
-    # Удаление временного файла
-    os.remove(temp_file_path)
-
-    permission = {
-        'type': 'user',
-        'role': 'writer',
-        'emailAddress': os.getenv("EMAIL")
-    }
-    drive_service.permissions().create(fileId=file_id, body=permission, fields='id').execute()
 
     # Установите формат даты для всего столбца D
     worksheet_payment.format('D:D', {
@@ -243,7 +183,7 @@ async def submit_report(
         str(username),
         str(contract_number),
         str(accounting_type),
-        str(photo_url),
+        '',
         str(comment)
     ]
     worksheet_payment.append_row(new_row, value_input_option="USER_ENTERED")
@@ -271,8 +211,6 @@ async def submit_report(
            № договора: {contract_number}
            Этап работ: {accounting_type} 
            Примечание: {comment if comment else "Нет примечания"}
-
-           <a href="{photo_url}">Ссылка на чек</a>
        """).strip()
 
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"

@@ -171,73 +171,6 @@
         -moz-appearance: textfield;
       }
 
-      .file-input-container {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 15px;
-      }
-
-      .file-input-container input[type='file'] {
-        position: absolute;
-        top: 0;
-        right: 0;
-        min-width: 100%;
-        min-height: 100%;
-        font-size: 100px;
-        text-align: right;
-        filter: alpha(opacity=0);
-        opacity: 0;
-        outline: none;
-        background: white;
-        cursor: pointer;
-        display: block;
-      }
-
-      .file-input-container .file-input-label {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        background-color: #f9f9f9;
-        color: #555;
-        text-align: center;
-        cursor: pointer;
-        transition: border-color 0.3s, box-shadow 0.3s;
-        font-size: 14px;
-        flex: 1;
-        margin-right: 10px;
-      }
-
-      .file-input-container .file-input-label:hover {
-        border-color: #007bff;
-        box-shadow: 0 0 6px rgba(0, 123, 255, 0.3);
-        background-color: #fff;
-      }
-
-      .capture-photo-button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 12px;
-        font-size: 16px;
-        font-weight: bold;
-        border-radius: 8px;
-        cursor: pointer;
-        width: 100%;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-        margin-bottom: 15px;
-      }
-
-      .capture-photo-button:hover {
-        background-color: #0056b3;
-      }
-
-      .capture-photo-button:active {
-        transform: scale(0.98);
-      }
-
       .loader {
         display: none;
         position: fixed;
@@ -301,33 +234,6 @@
         margin-right: 2%;
         z-index: 5;
       }
-
-      .thumbnail-container {
-        margin-top: 15px;
-        position: relative;
-      }
-
-      .thumbnail-container img {
-        width: 100%;
-        border-radius: 8px;
-      }
-
-      .thumbnail-container .delete-button {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        background-color: red;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 16px;
-      }
     </style>
   </head>
   <body>
@@ -369,56 +275,6 @@
           {% endfor %}
         </select>
 
-        <label for="check_photo"
-          >Визуальное доказательство: <span class="required">*</span></label
-        >
-        <div class="file-input-container">
-          <input
-            type="file"
-            id="check_photo_camera"
-            name="check_photo"
-            accept="image/*"
-            capture="environment"
-            style="display: none"
-          />
-          <button
-            type="button"
-            class="file-input-label"
-            onclick="document.getElementById('check_photo_camera').click()"
-          >
-            <span class="material-icons">camera_alt</span>
-          </button>
-          <input
-            type="file"
-            id="check_photo_gallery"
-            name="check_photo"
-            accept="image/*"
-            style="display: none"
-          />
-          <button
-            type="button"
-            class="file-input-label"
-            onclick="document.getElementById('check_photo_gallery').click()"
-          >
-            <span class="material-icons">photo_library</span>
-          </button>
-        </div>
-
-        <div
-          class="thumbnail-container"
-          id="thumbnailContainer"
-          style="display: none"
-        >
-          <img id="thumbnail" src="" alt="Миниатюра" />
-          <button
-            type="button"
-            class="delete-button"
-            onclick="confirmDeletePhoto()"
-          >
-            ×
-          </button>
-        </div>
-
         <label for="comment">Комментарий:</label>
         <textarea
           id="comment"
@@ -442,28 +298,13 @@
     </button>
 
     <script>
-      let currentFile = null;
-
       async function submitForm() {
         const form = document.getElementById('paymentForm');
         const loader = document.getElementById('loader');
         const successMessage = document.getElementById('successMessage');
         const submitButton = document.getElementById('submitButton');
-        const checkPhotoInputCamera =
-          document.getElementById('check_photo_camera');
-        const checkPhotoInputGallery = document.getElementById(
-          'check_photo_gallery'
-        );
         const accountingTypeInput = document.getElementById('accounting_type');
         const contractNumberInput = document.getElementById('contract_number');
-
-        if (
-          checkPhotoInputCamera.files.length === 0 &&
-          checkPhotoInputGallery.files.length === 0
-        ) {
-          alert('Пожалуйста, добавьте визуальное доказательство.');
-          return;
-        }
 
         if (accountingTypeInput.value === '') {
           alert('Пожалуйста, выберите метрику.');
@@ -479,8 +320,6 @@
         loader.style.display = 'block';
 
         const formData = new FormData(form);
-
-        formData.set('check_photo', currentFile);
 
         const response = await fetch(form.action, {
           method: form.method,
@@ -506,50 +345,7 @@
         const form = document.getElementById('paymentForm');
         form.reset();
         document.getElementById('accounting_type').selectedIndex = 0;
-        document.getElementById('check_photo_camera').value = '';
-        document.getElementById('check_photo_gallery').value = '';
         document.getElementById('comment').value = '';
-        document.getElementById('thumbnailContainer').style.display = 'none';
-        currentFile = null;
-      }
-
-      function confirmDeletePhoto() {
-        if (confirm('Вы уверены, что хотите удалить фото?')) {
-          deletePhoto();
-        }
-      }
-
-      function deletePhoto() {
-        document.getElementById('thumbnailContainer').style.display = 'none';
-        document.getElementById('check_photo_camera').value = '';
-        document.getElementById('check_photo_gallery').value = '';
-        currentFile = null;
-      }
-
-      document
-        .getElementById('check_photo_camera')
-        .addEventListener('change', function (event) {
-          handleFileChange(event);
-        });
-
-      document
-        .getElementById('check_photo_gallery')
-        .addEventListener('change', function (event) {
-          handleFileChange(event);
-        });
-
-      function handleFileChange(event) {
-        const file = event.target.files[0];
-        if (file) {
-          currentFile = file;
-          const reader = new FileReader();
-          reader.onload = function (e) {
-            document.getElementById('thumbnail').src = e.target.result;
-            document.getElementById('thumbnailContainer').style.display =
-              'block';
-          };
-          reader.readAsDataURL(file);
-        }
       }
     </script>
   </body>
